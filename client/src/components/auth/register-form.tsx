@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -9,13 +10,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { authClient } from "@/lib/auth-client";
 
 export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [accepted, setAccepted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
     e.preventDefault();
+
+    if (loading) return;
 
     const form = new FormData(e.currentTarget);
 
@@ -50,18 +57,44 @@ export function RegisterForm() {
     }
 
     if (!accepted) {
-      toast.error("Please accept the terms to continue.");
+      toast.error("Please accept the terms and conditions.");
       return;
     }
 
-    console.log({
-      name,
-      email,
-      photo,
-      password,
-    });
+    if (photo) {
+      try {
+        new URL(photo);
+      } catch {
+        toast.error("Please enter a valid profile photo URL.");
+        return;
+      }
+    }
 
-    toast.info("Registration UI is ready. Backend integration is coming next.");
+    setLoading(true);
+
+    try {
+      const { error } = await authClient.signUp.email({
+        name,
+        email,
+        password,
+        image: photo || undefined,
+      });
+
+      if (error) {
+        toast.error(error.message || "Registration failed.");
+        return;
+      }
+
+      toast.success("Account created successfully!");
+
+      window.location.href = "/";
+
+    } catch (error) {
+      console.error("Registration error:", error);
+      toast.error("Unable to connect to the server.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -73,6 +106,7 @@ export function RegisterForm() {
           name="name"
           placeholder="Enter your full name"
           autoComplete="name"
+          required
         />
       </div>
 
@@ -84,6 +118,7 @@ export function RegisterForm() {
           type="email"
           placeholder="you@example.com"
           autoComplete="email"
+          required
         />
       </div>
 
@@ -99,6 +134,7 @@ export function RegisterForm() {
 
       <div className="space-y-2">
         <Label htmlFor="password">Password *</Label>
+
         <div className="relative">
           <Input
             id="password"
@@ -107,6 +143,7 @@ export function RegisterForm() {
             placeholder="Create a strong password"
             autoComplete="new-password"
             className="pr-12"
+            required
           />
 
           <button
@@ -136,14 +173,19 @@ export function RegisterForm() {
             setAccepted(checked === true)
           }
         />
+
         <Label htmlFor="terms" className="text-sm font-normal">
           I agree to the terms and conditions.
         </Label>
       </div>
 
-      <Button type="submit" className="gradient-bg w-full text-white">
+      <Button
+        type="submit"
+        disabled={loading}
+        className="gradient-bg w-full text-white"
+      >
         <UserPlus className="mr-2 h-4 w-4" />
-        Create Account
+        {loading ? "Creating Account..." : "Create Account"}
       </Button>
 
       <p className="text-center text-sm text-muted-foreground">
