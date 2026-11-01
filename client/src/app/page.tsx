@@ -9,39 +9,22 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 
-import ThemeToggle from "@/components/shared/theme-toggle";
-
 export default function Home() {
   return (
-    <main className="min-h-screen">
-      {/* Header */}
-      <header className="border-b bg-background/80 backdrop-blur">
-        <div className="container-custom flex h-20 items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="gradient-bg flex h-10 w-10 items-center justify-center rounded-xl text-white">
-              <Heart size={22} />
-            </div>
+    <div>
 
-            <span className="text-xl font-bold tracking-tight">
-              Social<span className="gradient-text">Connect</span>
-            </span>
-          </div>
-
-          <ThemeToggle />
-        </div>
-      </header>
-
-      {/* Hero */}
+      {/* Hero Section */}
       <section className="container-custom py-20 md:py-28">
         <div className="mx-auto max-w-3xl text-center">
+
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border bg-accent px-4 py-2 text-sm font-medium text-accent-foreground">
             <HandHeart size={17} />
             Together for a better community
@@ -62,21 +45,26 @@ export default function Home() {
           </p>
 
           <div className="mt-9 flex flex-wrap justify-center gap-4">
-            <Button size="lg" className="gradient-bg border-0">
-              Explore Events
-              <ArrowRight className="ml-2 h-4 w-4" />
+            <Button asChild size="lg" className="gradient-bg border-0">
+              <a href="/events">
+                Explore Events
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </a>
             </Button>
 
-            <Button size="lg" variant="outline">
-              Create an Event
+            <Button asChild size="lg" variant="outline">
+              <a href="/create-event">
+                Create an Event
+              </a>
             </Button>
           </div>
         </div>
       </section>
 
-      {/* Features */}
+      {/* Feature Section */}
       <section className="container-custom pb-20">
         <div className="mb-10 text-center">
+
           <p className="text-sm font-semibold uppercase tracking-widest text-primary">
             Our Platform
           </p>
@@ -91,6 +79,7 @@ export default function Home() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
+
           <Card className="card-hover">
             <CardHeader>
               <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -98,6 +87,7 @@ export default function Home() {
               </div>
 
               <CardTitle>Discover Events</CardTitle>
+
               <CardDescription>
                 Find upcoming community activities and social
                 development programs.
@@ -112,6 +102,7 @@ export default function Home() {
               </div>
 
               <CardTitle>Join Communities</CardTitle>
+
               <CardDescription>
                 Connect with volunteers and people who share
                 your passion for positive change.
@@ -126,25 +117,47 @@ export default function Home() {
               </div>
 
               <CardTitle>Create Impact</CardTitle>
+
               <CardDescription>
                 Organize activities and make your community
                 stronger through collective action.
               </CardDescription>
             </CardHeader>
           </Card>
+
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t bg-card py-8">
-        <div className="container-custom flex flex-col items-center justify-between gap-4 text-sm text-muted-foreground md:flex-row">
-          <p>
-            © 2026 SocialConnect. All rights reserved.
+      {/* Impact Banner */}
+      <section className="container-custom pb-20">
+        <div className="gradient-bg rounded-3xl px-6 py-12 text-center text-white md:px-12 md:py-16">
+
+          <Heart className="mx-auto mb-5" size={38} />
+
+          <h2 className="text-3xl font-bold md:text-4xl">
+            Small Actions. Big Impact.
+          </h2>
+
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-white/85 md:text-base">
+            Every volunteer, every event, and every contribution
+            helps build a stronger and more caring community.
           </p>
 
-          <p>Connect People. Create Impact.</p>
+          <Button
+            asChild
+            variant="secondary"
+            size="lg"
+            className="mt-7"
+          >
+            <a href="/events">
+              Find an Event
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </a>
+          </Button>
+
         </div>
-      </footer>
-    </main>
+      </section>
+
+    </div>
   );
 }
