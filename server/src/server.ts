@@ -1,4 +1,4 @@
-
+import impactRoutes from "./routes/impact.routes.js";
 import dns from "node:dns";
 
 // MongoDB DNS configuration
@@ -78,10 +78,10 @@ app.use(express.json());
 app.use("/api/events", eventRoutes);
 
 // ======================================
-// IMAGE UPLOAD ROUTES
+// COMMUNITY IMPACT ROUTES
 // ======================================
 
-app.use("/api/upload", uploadRoutes);
+app.use("/api/impact", impactRoutes);
 
 // ======================================
 // HEALTH CHECK + MONGODB CONNECTION
