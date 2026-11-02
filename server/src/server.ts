@@ -1,3 +1,4 @@
+
 import dns from "node:dns";
 
 // MongoDB DNS configuration
@@ -14,13 +15,16 @@ import {
 } from "better-auth/node";
 
 import { auth } from "./lib/auth.js";
+
 import {
   db,
   createDatabaseIndexes,
 } from "./lib/db.js";
 
 import { requireAuth } from "./middleware/require-auth.js";
+
 import eventRoutes from "./routes/event.routes.js";
+import uploadRoutes from "./routes/upload.routes.js";
 
 // ======================================
 // EXPRESS APP
@@ -72,6 +76,12 @@ app.use(express.json());
 // ======================================
 
 app.use("/api/events", eventRoutes);
+
+// ======================================
+// IMAGE UPLOAD ROUTES
+// ======================================
+
+app.use("/api/upload", uploadRoutes);
 
 // ======================================
 // HEALTH CHECK + MONGODB CONNECTION
@@ -165,6 +175,8 @@ app.listen(PORT, async () => {
 
   try {
     await createDatabaseIndexes();
+
+    console.log("Database indexes are ready!");
   } catch (error) {
     console.error(
       "Database index creation failed:",
