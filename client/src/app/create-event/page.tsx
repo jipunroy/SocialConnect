@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -11,6 +11,7 @@ import {
   ArrowLeft,
   Loader2,
   PlusCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -42,10 +43,10 @@ function getLocalDateTime() {
 
 function CreateEventForm() {
   const router = useRouter();
-
   const { data: session } = authClient.useSession();
 
   const [loading, setLoading] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -59,7 +60,7 @@ function CreateEventForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (
-    e: React.ChangeEvent<
+    e: ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
     >
   ) => {
@@ -74,6 +75,10 @@ function CreateEventForm() {
       ...prev,
       [name]: "",
     }));
+
+    if (name === "thumbnail") {
+      setImageError(false);
+    }
   };
 
   const validateForm = () => {
@@ -81,10 +86,15 @@ function CreateEventForm() {
 
     if (!formData.title.trim()) {
       newErrors.title = "Event title is required.";
+    } else if (formData.title.trim().length < 5) {
+      newErrors.title = "Title must be at least 5 characters.";
     }
 
     if (!formData.description.trim()) {
       newErrors.description = "Description is required.";
+    } else if (formData.description.trim().length < 10) {
+      newErrors.description =
+        "Description must be at least 10 characters.";
     }
 
     if (!formData.eventType) {
@@ -95,7 +105,8 @@ function CreateEventForm() {
       newErrors.thumbnail = "Thumbnail image URL is required.";
     } else {
       try {
-        const url = new URL(formData.thumbnail);
+        const url = new URL(formData.thumbnail.trim());
+
         if (!["http:", "https:"].includes(url.protocol)) {
           newErrors.thumbnail = "Enter a valid image URL.";
         }
@@ -113,7 +124,8 @@ function CreateEventForm() {
     } else if (
       new Date(formData.eventDate).getTime() <= Date.now()
     ) {
-      newErrors.eventDate = "Please select a future date and time.";
+      newErrors.eventDate =
+        "Please select a future date and time.";
     }
 
     setErrors(newErrors);
@@ -146,9 +158,21 @@ function CreateEventForm() {
         },
         body: JSON.stringify({
           ...formData,
+          title: formData.title.trim(),
+          description: formData.description.trim(),
+          thumbnail: formData.thumbnail.trim(),
+          location: formData.location.trim(),
           eventDate: new Date(formData.eventDate).toISOString(),
         }),
       });
+
+      const contentType = response.headers.get("content-type");
+
+      if (!contentType?.includes("application/json")) {
+        throw new Error(
+          "Server returned an unexpected response. Please try again."
+        );
+      }
 
       const result = await response.json();
 
@@ -167,6 +191,8 @@ function CreateEventForm() {
         eventDate: "",
       });
 
+      setImageError(false);
+
       router.push("/upcoming-events");
       router.refresh();
     } catch (error) {
@@ -183,35 +209,55 @@ function CreateEventForm() {
   };
 
   return (
-    <div className="min-h-screen bg-muted/30 py-12">
+    <div className="min-h-screen bg-muted/30 py-8 sm:py-12">
       <div className="container mx-auto max-w-3xl px-4">
         <Link
           href="/"
-          className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-primary"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition hover:text-primary"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Home
         </Link>
 
         <div className="mb-8">
-          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <PlusCircle className="h-6 w-6" />
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <PlusCircle className="h-7 w-7" />
           </div>
+
+          <p className="mb-2 text-sm font-semibold uppercase tracking-wider text-primary">
+            Make an Impact
+          </p>
 
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
             Create an Event
           </h1>
 
-          <p className="mt-2 text-muted-foreground">
-            Bring people together and make a positive impact in your community.
+          <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground sm:text-base">
+            Bring people together, share your ideas and create
+            meaningful change in your community.
           </p>
         </div>
 
-        <div className="rounded-2xl border bg-card p-5 shadow-sm sm:p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Event Title */}
+        <div className="overflow-hidden rounded-2xl border bg-card shadow-sm">
+          <div className="border-b bg-muted/30 px-5 py-4 sm:px-8">
+            <h2 className="font-semibold">Event Information</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Fill in the details below to publish your event.
+            </p>
+          </div>
+
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-6 p-5 sm:p-8"
+          >
             <div className="space-y-2">
-              <Label htmlFor="title">Event Title *</Label>
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="title">Event Title *</Label>
+                <span className="text-xs text-muted-foreground">
+                  {formData.title.length}/100
+                </span>
+              </div>
+
               <Input
                 id="title"
                 name="title"
@@ -219,15 +265,27 @@ function CreateEventForm() {
                 value={formData.title}
                 onChange={handleChange}
                 maxLength={100}
+                aria-invalid={!!errors.title}
+                className={errors.title ? "border-destructive" : ""}
               />
+
               {errors.title && (
-                <p className="text-sm text-destructive">{errors.title}</p>
+                <p className="text-sm text-destructive">
+                  {errors.title}
+                </p>
               )}
             </div>
 
-            {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">Event Description *</Label>
+              <div className="flex items-center justify-between gap-2">
+                <Label htmlFor="description">
+                  Event Description *
+                </Label>
+                <span className="text-xs text-muted-foreground">
+                  {formData.description.length}/2000
+                </span>
+              </div>
+
               <Textarea
                 id="description"
                 name="description"
@@ -236,7 +294,12 @@ function CreateEventForm() {
                 onChange={handleChange}
                 rows={5}
                 maxLength={2000}
+                aria-invalid={!!errors.description}
+                className={
+                  errors.description ? "border-destructive" : ""
+                }
               />
+
               {errors.description && (
                 <p className="text-sm text-destructive">
                   {errors.description}
@@ -244,23 +307,30 @@ function CreateEventForm() {
               )}
             </div>
 
-            {/* Event Type */}
             <div className="space-y-2">
               <Label htmlFor="eventType">Event Type *</Label>
+
               <select
                 id="eventType"
                 name="eventType"
                 value={formData.eventType}
                 onChange={handleChange}
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring"
+                aria-invalid={!!errors.eventType}
+                className={`flex h-11 w-full rounded-md border bg-background px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-ring ${
+                  errors.eventType
+                    ? "border-destructive"
+                    : "border-input"
+                }`}
               >
                 <option value="">Select an event type</option>
+
                 {eventTypes.map((type) => (
                   <option key={type} value={type}>
                     {type}
                   </option>
                 ))}
               </select>
+
               {errors.eventType && (
                 <p className="text-sm text-destructive">
                   {errors.eventType}
@@ -268,11 +338,14 @@ function CreateEventForm() {
               )}
             </div>
 
-            {/* Thumbnail */}
             <div className="space-y-2">
-              <Label htmlFor="thumbnail">Thumbnail Image URL *</Label>
+              <Label htmlFor="thumbnail">
+                Thumbnail Image URL *
+              </Label>
+
               <div className="relative">
                 <ImagePlus className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+
                 <Input
                   id="thumbnail"
                   name="thumbnail"
@@ -280,9 +353,13 @@ function CreateEventForm() {
                   placeholder="https://example.com/event-image.jpg"
                   value={formData.thumbnail}
                   onChange={handleChange}
-                  className="pl-10"
+                  className={`pl-10 ${
+                    errors.thumbnail ? "border-destructive" : ""
+                  }`}
+                  aria-invalid={!!errors.thumbnail}
                 />
               </div>
+
               {errors.thumbnail && (
                 <p className="text-sm text-destructive">
                   {errors.thumbnail}
@@ -290,33 +367,49 @@ function CreateEventForm() {
               )}
 
               {formData.thumbnail && !errors.thumbnail && (
-                <div className="mt-3 overflow-hidden rounded-xl border">
-                  <img
-                    src={formData.thumbnail}
-                    alt="Event preview"
-                    className="h-48 w-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
+                <div className="mt-4 overflow-hidden rounded-xl border bg-muted">
+                  {!imageError ? (
+                    <img
+                      src={formData.thumbnail}
+                      alt="Event thumbnail preview"
+                      className="h-48 w-full object-cover sm:h-64"
+                      onError={() => setImageError(true)}
+                    />
+                  ) : (
+                    <div className="flex h-48 flex-col items-center justify-center gap-2 text-muted-foreground">
+                      <ImagePlus className="h-8 w-8" />
+                      <p className="text-sm">
+                        Unable to load image. Check the URL.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
+
+              <p className="text-xs text-muted-foreground">
+                Use a publicly accessible image URL.
+              </p>
             </div>
 
-            {/* Location */}
             <div className="space-y-2">
               <Label htmlFor="location">Event Location *</Label>
+
               <div className="relative">
                 <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+
                 <Input
                   id="location"
                   name="location"
                   placeholder="e.g. Dhanmondi, Dhaka"
                   value={formData.location}
                   onChange={handleChange}
-                  className="pl-10"
+                  className={`pl-10 ${
+                    errors.location ? "border-destructive" : ""
+                  }`}
+                  aria-invalid={!!errors.location}
                 />
               </div>
+
               {errors.location && (
                 <p className="text-sm text-destructive">
                   {errors.location}
@@ -324,11 +417,14 @@ function CreateEventForm() {
               )}
             </div>
 
-            {/* Date */}
             <div className="space-y-2">
-              <Label htmlFor="eventDate">Event Date & Time *</Label>
+              <Label htmlFor="eventDate">
+                Event Date & Time *
+              </Label>
+
               <div className="relative">
                 <CalendarDays className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+
                 <Input
                   id="eventDate"
                   name="eventDate"
@@ -336,34 +432,53 @@ function CreateEventForm() {
                   min={getLocalDateTime()}
                   value={formData.eventDate}
                   onChange={handleChange}
-                  className="pl-10"
+                  className={`pl-10 ${
+                    errors.eventDate ? "border-destructive" : ""
+                  }`}
+                  aria-invalid={!!errors.eventDate}
                 />
               </div>
+
               {errors.eventDate && (
                 <p className="text-sm text-destructive">
                   {errors.eventDate}
                 </p>
               )}
-            </div>
 
-            {/* Creator */}
-            <div className="rounded-xl bg-muted/60 p-4">
-              <p className="text-sm font-medium">Event Organizer</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {session?.user?.name || "Logged-in user"}
-              </p>
               <p className="text-xs text-muted-foreground">
-                {session?.user?.email || ""}
+                Choose a future date and time for your event.
               </p>
             </div>
 
-            {/* Submit */}
+            <div className="rounded-xl border bg-muted/40 p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold">
+                    Event Organizer
+                  </p>
+
+                  <p className="mt-1 break-words text-sm text-muted-foreground">
+                    {session?.user?.name || "Logged-in user"}
+                  </p>
+
+                  <p className="break-all text-xs text-muted-foreground">
+                    {session?.user?.email || ""}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="flex flex-col-reverse gap-3 border-t pt-6 sm:flex-row sm:justify-end">
               <Button
                 type="button"
                 variant="outline"
                 disabled={loading}
                 onClick={() => router.push("/")}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
@@ -371,7 +486,7 @@ function CreateEventForm() {
               <Button
                 type="submit"
                 disabled={loading}
-                className="min-w-40"
+                className="w-full sm:min-w-40 sm:w-auto"
               >
                 {loading ? (
                   <>
@@ -379,12 +494,20 @@ function CreateEventForm() {
                     Creating...
                   </>
                 ) : (
-                  "Create Event"
+                  <>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Create Event
+                  </>
                 )}
               </Button>
             </div>
           </form>
         </div>
+
+        <p className="mt-5 text-center text-xs text-muted-foreground">
+          By creating an event, you agree to help build a better
+          community.
+        </p>
       </div>
     </div>
   );

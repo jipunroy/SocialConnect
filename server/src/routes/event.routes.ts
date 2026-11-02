@@ -1,4 +1,3 @@
-
 import { Router } from "express";
 import { ObjectId } from "mongodb";
 
@@ -19,7 +18,8 @@ const eventTypes = [
   "Other",
 ];
 
-// Create Event
+// CREATE EVENT
+
 router.post("/", requireAuth, async (req, res) => {
   try {
     const user = res.locals.user;
@@ -104,15 +104,27 @@ router.post("/", requireAuth, async (req, res) => {
   }
 });
 
-// Get Upcoming Events
-router.get("/", async (_req, res) => {
+// GET UPCOMING EVENTS
+// Home page can request /api/events?limit=6
+
+router.get("/", async (req, res) => {
   try {
-    const events = await eventsCollection
+    const requestedLimit = Number(req.query.limit);
+
+    const cursor = eventsCollection
       .find({
         eventDate: { $gt: new Date() },
       })
-      .sort({ eventDate: 1 })
-      .toArray();
+      .sort({ eventDate: 1 });
+
+    if (
+      Number.isInteger(requestedLimit) &&
+      requestedLimit > 0
+    ) {
+      cursor.limit(Math.min(requestedLimit, 100));
+    }
+
+    const events = await cursor.toArray();
 
     return res.status(200).json({
       success: true,
@@ -129,7 +141,8 @@ router.get("/", async (_req, res) => {
   }
 });
 
-// Get My Created Events
+// GET MY CREATED EVENTS
+
 router.get("/my-events", requireAuth, async (_req, res) => {
   try {
     const user = res.locals.user;
@@ -154,7 +167,8 @@ router.get("/my-events", requireAuth, async (_req, res) => {
   }
 });
 
-// Get My Joined Events
+// GET MY JOINED EVENTS
+
 router.get("/joined", requireAuth, async (_req, res) => {
   try {
     const user = res.locals.user;
@@ -189,44 +203,46 @@ router.get("/joined", requireAuth, async (_req, res) => {
   }
 });
 
-// Get Single Event
+// GET SINGLE EVENT BY ID
 
-router.get("/", async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
-    const requestedLimit = Number(req.query.limit);
+    const { id } = req.params;
 
-    const eventsCollection = db.collection("events");
-
-    const cursor = eventsCollection
-      .find({
-        eventDate: { $gt: new Date() },
-      })
-      .sort({ eventDate: 1 });
-
-    // Home page চাইলে limit=6 পাঠাবে।
-    if (Number.isInteger(requestedLimit) && requestedLimit > 0) {
-      cursor.limit(Math.min(requestedLimit, 100));
+    if (!ObjectId.isValid(id)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid event ID.",
+      });
     }
 
-    const events = await cursor.toArray();
+    const event = await eventsCollection.findOne({
+      _id: new ObjectId(id),
+    });
 
-    res.status(200).json({
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        message: "Event not found.",
+      });
+    }
+
+    return res.status(200).json({
       success: true,
-      total: events.length,
-      events,
+      event,
     });
   } catch (error) {
-    console.error("Fetch events error:", error);
+    console.error("Get single event error:", error);
 
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      message: "Failed to fetch events.",
+      message: "Unable to fetch event details.",
     });
   }
 });
 
+// JOIN EVENT
 
-// Join Event
 router.post("/:id/join", requireAuth, async (req, res) => {
   try {
     const user = res.locals.user;
@@ -285,7 +301,8 @@ router.post("/:id/join", requireAuth, async (req, res) => {
   }
 });
 
-// Update My Event
+// UPDATE MY EVENT
+
 router.patch("/:id", requireAuth, async (req, res) => {
   try {
     const user = res.locals.user;
@@ -401,7 +418,8 @@ router.patch("/:id", requireAuth, async (req, res) => {
   }
 });
 
-// Delete My Event
+// DELETE MY EVENT
+
 router.delete("/:id", requireAuth, async (req, res) => {
   try {
     const user = res.locals.user;

@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import {
   CalendarDays,
@@ -15,6 +15,8 @@ import {
   Settings,
   Users,
   User,
+  LayoutDashboard,
+  Sparkles,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -51,6 +53,29 @@ type NavbarProps = {
   onLogout?: () => void;
 };
 
+const publicLinks = [
+  {
+    label: "Upcoming Events",
+    href: "/upcoming-events",
+    icon: CalendarDays,
+  },
+  {
+    label: "Features",
+    href: "/#features",
+    icon: Sparkles,
+  },
+  {
+    label: "Community",
+    href: "/#community",
+    icon: Users,
+  },
+  {
+    label: "Impact Dashboard",
+    href: "/impact-dashboard",
+    icon: LayoutDashboard,
+  },
+];
+
 const privateLinks = [
   {
     label: "Create Event",
@@ -79,7 +104,9 @@ export function Navbar({
   onLogout,
 }: NavbarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
+
   const router = useRouter();
+  const pathname = usePathname();
 
   const initials =
     user?.name
@@ -88,6 +115,15 @@ export function Navbar({
       .join("")
       .slice(0, 2)
       .toUpperCase() || "U";
+
+  const isActive = (href: string) => {
+    if (href.startsWith("/#")) return false;
+
+    return (
+      pathname === href ||
+      (href !== "/" && pathname.startsWith(`${href}/`))
+    );
+  };
 
   const handleLogout = () => {
     setMobileOpen(false);
@@ -99,22 +135,31 @@ export function Navbar({
     router.push(href);
   };
 
+  const navLinkClass = (href: string) =>
+    `flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-200 ${
+      isActive(href)
+        ? "bg-primary/10 text-primary"
+        : "text-muted-foreground hover:bg-accent hover:text-foreground"
+    }`;
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/90 backdrop-blur-xl">
-      <div className="container-custom flex h-16 items-center justify-between gap-4">
+    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/90 shadow-sm backdrop-blur-xl">
+      <div className="container-custom flex h-16 items-center justify-between gap-3">
 
         {/* Logo */}
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2"
+          className="group flex shrink-0 items-center gap-2"
+          aria-label="SocialConnect Home"
         >
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-blue-500 text-white shadow-md">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-blue-500 text-white shadow-md transition-transform duration-200 group-hover:scale-105">
             <Users className="h-5 w-5" />
           </div>
 
           <div className="flex flex-col">
             <span className="text-lg font-bold tracking-tight">
-              Social<span className="text-primary">Connect</span>
+              Social
+              <span className="text-primary">Connect</span>
             </span>
 
             <span className="hidden text-[10px] leading-none text-muted-foreground sm:block">
@@ -125,26 +170,18 @@ export function Navbar({
 
         {/* Desktop Navigation */}
         <nav className="hidden items-center gap-1 lg:flex">
-          <Link
-            href="/upcoming-events"
-            className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            Upcoming Events
-          </Link>
-
-          <Link
-            href="/#features"
-            className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            Features
-          </Link>
-
-          <Link
-            href="/#community"
-            className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-          >
-            Community
-          </Link>
+          {publicLinks.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              aria-current={
+                isActive(item.href) ? "page" : undefined
+              }
+              className={navLinkClass(item.href)}
+            >
+              {item.label}
+            </Link>
+          ))}
         </nav>
 
         {/* Desktop Actions */}
@@ -152,13 +189,16 @@ export function Navbar({
           <ThemeToggle />
 
           {!user ? (
-            <Button onClick={() => router.push("/login")}>
+            <Button
+              onClick={() => router.push("/login")}
+              className="rounded-xl px-5 shadow-sm"
+            >
               <LogIn className="mr-2 h-4 w-4" />
               Login
             </Button>
           ) : (
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-2 rounded-full border border-border bg-background py-1 pl-1 pr-3 transition-colors hover:bg-accent">
+              <DropdownMenuTrigger className="flex items-center gap-2 rounded-full border border-border bg-background py-1 pl-1 pr-3 transition-all hover:border-primary/40 hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
                 <Avatar className="h-9 w-9">
                   <AvatarImage
                     src={user.image || undefined}
@@ -179,17 +219,29 @@ export function Navbar({
 
               <DropdownMenuContent
                 align="end"
-                className="w-60"
+                className="w-60 rounded-xl p-2"
               >
                 {/* User Information */}
-                <div className="px-2 py-2">
-                  <p className="truncate text-sm font-semibold">
-                    {user.name}
-                  </p>
+                <div className="flex items-center gap-3 px-2 py-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={user.image || undefined}
+                      alt={user.name}
+                    />
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {initials}
+                    </AvatarFallback>
+                  </Avatar>
 
-                  <p className="mt-1 truncate text-xs text-muted-foreground">
-                    {user.email}
-                  </p>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold">
+                      {user.name}
+                    </p>
+
+                    <p className="truncate text-xs text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
                 </div>
 
                 <DropdownMenuSeparator />
@@ -201,7 +253,11 @@ export function Navbar({
                     <DropdownMenuItem
                       key={item.href}
                       onClick={() => router.push(item.href)}
-                      className="cursor-pointer"
+                      className={`cursor-pointer rounded-lg ${
+                        isActive(item.href)
+                          ? "bg-primary/10 text-primary"
+                          : ""
+                      }`}
                     >
                       <Icon className="mr-2 h-4 w-4" />
                       {item.label}
@@ -213,7 +269,7 @@ export function Navbar({
 
                 <DropdownMenuItem
                   onClick={handleLogout}
-                  className="cursor-pointer text-destructive focus:text-destructive"
+                  className="cursor-pointer rounded-lg text-destructive focus:text-destructive"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
                   Logout
@@ -231,7 +287,7 @@ export function Navbar({
             open={mobileOpen}
             onOpenChange={setMobileOpen}
           >
-            <SheetTrigger className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-input bg-background hover:bg-accent">
+            <SheetTrigger className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-input bg-background transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
               <Menu className="h-5 w-5" />
               <span className="sr-only">
                 Toggle navigation menu
@@ -240,7 +296,7 @@ export function Navbar({
 
             <SheetContent
               side="right"
-              className="w-[300px] sm:w-[360px]"
+              className="w-[300px] overflow-y-auto sm:w-[360px]"
             >
               <div className="mt-8 flex flex-col gap-5">
 
@@ -255,40 +311,33 @@ export function Navbar({
                   </div>
 
                   <span className="text-lg font-bold">
-                    Social<span className="text-primary">Connect</span>
+                    Social
+                    <span className="text-primary">Connect</span>
                   </span>
                 </Link>
 
                 <div className="h-px bg-border" />
 
                 {/* Public Links */}
-                <nav className="flex flex-col gap-2">
-                  <Link
-                    href="/upcoming-events"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium hover:bg-accent"
-                  >
-                    <CalendarDays className="h-5 w-5" />
-                    Upcoming Events
-                  </Link>
+                <nav className="flex flex-col gap-1">
+                  {publicLinks.map((item) => {
+                    const Icon = item.icon;
 
-                  <Link
-                    href="/#features"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium hover:bg-accent"
-                  >
-                    <Settings className="h-5 w-5" />
-                    Features
-                  </Link>
-
-                  <Link
-                    href="/#community"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium hover:bg-accent"
-                  >
-                    <Users className="h-5 w-5" />
-                    Community
-                  </Link>
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        onClick={() => setMobileOpen(false)}
+                        aria-current={
+                          isActive(item.href) ? "page" : undefined
+                        }
+                        className={navLinkClass(item.href)}
+                      >
+                        <Icon className="h-5 w-5" />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
                 </nav>
 
                 <div className="h-px bg-border" />
@@ -296,8 +345,8 @@ export function Navbar({
                 {/* Logged In User */}
                 {user ? (
                   <>
-                    <div className="flex items-center gap-3 rounded-xl bg-accent/50 p-3">
-                      <Avatar className="h-10 w-10">
+                    <div className="flex items-center gap-3 rounded-xl border border-border bg-accent/40 p-3">
+                      <Avatar className="h-11 w-11">
                         <AvatarImage
                           src={user.image || undefined}
                           alt={user.name}
@@ -319,29 +368,30 @@ export function Navbar({
                       </div>
                     </div>
 
-                    <nav className="flex flex-col gap-2">
+                    <nav className="flex flex-col gap-1">
                       {privateLinks.map((item) => {
                         const Icon = item.icon;
 
                         return (
-                          <button
+                          <Link
                             key={item.href}
-                            type="button"
-                            onClick={() =>
-                              handleNavigation(item.href)
+                            href={item.href}
+                            onClick={() => setMobileOpen(false)}
+                            aria-current={
+                              isActive(item.href) ? "page" : undefined
                             }
-                            className="flex items-center gap-3 rounded-lg px-3 py-3 text-left text-sm font-medium hover:bg-accent"
+                            className={navLinkClass(item.href)}
                           >
                             <Icon className="h-5 w-5" />
                             {item.label}
-                          </button>
+                          </Link>
                         );
                       })}
                     </nav>
 
                     <Button
                       variant="destructive"
-                      className="w-full"
+                      className="mt-2 w-full rounded-xl"
                       onClick={handleLogout}
                     >
                       <LogOut className="mr-2 h-4 w-4" />
@@ -350,13 +400,23 @@ export function Navbar({
                   </>
                 ) : (
                   <Button
-                    className="w-full"
+                    className="w-full rounded-xl"
                     onClick={() => handleNavigation("/login")}
                   >
                     <LogIn className="mr-2 h-4 w-4" />
                     Login
                   </Button>
                 )}
+
+                <div className="rounded-xl bg-accent/50 p-4">
+                  <p className="text-sm font-semibold">
+                    Make a Difference Together
+                  </p>
+
+                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                    Join community events and create a positive impact.
+                  </p>
+                </div>
               </div>
             </SheetContent>
           </Sheet>

@@ -1,7 +1,12 @@
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
 @custom-variant dark (&:is(.dark *));
+
+/* ========================================
+   THEME VARIABLES
+======================================== */
 
 :root {
   --background: 220 33% 98%;
@@ -33,6 +38,10 @@
   --radius: 0.85rem;
 }
 
+/* ========================================
+   DARK THEME
+======================================== */
+
 .dark {
   --background: 224 32% 9%;
   --foreground: 220 20% 96%;
@@ -60,6 +69,10 @@
   --input: 224 18% 23%;
   --ring: 255 84% 70%;
 }
+
+/* ========================================
+   TAILWIND THEME MAPPING
+======================================== */
 
 @theme inline {
   --color-background: hsl(var(--background));
@@ -94,18 +107,26 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* ========================================
+   GLOBAL STYLES
+======================================== */
+
 * {
   border-color: hsl(var(--border));
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 5rem;
 }
 
 body {
+  min-height: 100vh;
   background: hsl(var(--background));
   color: hsl(var(--foreground));
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-inter), Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 ::selection {
@@ -118,12 +139,37 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
+button {
+  cursor: pointer;
+}
+
+img {
+  max-width: 100%;
+}
+
+/* ========================================
+   FOCUS ACCESSIBILITY
+======================================== */
+
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 3px;
+}
+
+/* ========================================
+   CONTAINER
+======================================== */
+
 .container-custom {
   width: 100%;
   max-width: 1280px;
   margin-inline: auto;
   padding-inline: 1.5rem;
 }
+
+/* ========================================
+   GRADIENT UTILITIES
+======================================== */
 
 .gradient-text {
   background: linear-gradient(110deg, #6c4cf1, #3478f6);
@@ -136,10 +182,22 @@ a {
   background: linear-gradient(110deg, #6c4cf1, #3478f6);
 }
 
+.gradient-border {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
+    linear-gradient(110deg, #6c4cf1, #3478f6) border-box;
+}
+
+/* ========================================
+   CARD EFFECTS
+======================================== */
+
 .card-hover {
   transition:
     transform 0.25s ease,
-    box-shadow 0.25s ease;
+    box-shadow 0.25s ease,
+    border-color 0.25s ease;
 }
 
 .card-hover:hover {
@@ -147,13 +205,103 @@ a {
   box-shadow: 0 16px 35px rgb(108 76 241 / 10%);
 }
 
+.dark .card-hover:hover {
+  box-shadow: 0 16px 35px rgb(0 0 0 / 25%);
+}
+
+/* ========================================
+   SECTION UTILITIES
+======================================== */
+
+.section-padding {
+  padding-block: 5rem;
+}
+
+.section-heading {
+  font-size: clamp(1.8rem, 4vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.035em;
+}
+
+.text-balance {
+  text-wrap: balance;
+}
+
+/* ========================================
+   IMAGE EFFECTS
+======================================== */
+
+.image-hover {
+  overflow: hidden;
+}
+
+.image-hover img {
+  transition: transform 0.4s ease;
+}
+
+.image-hover:hover img {
+  transform: scale(1.05);
+}
+
+/* ========================================
+   SCROLLBAR
+======================================== */
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.35) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.35);
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* ========================================
+   RESPONSIVE DESIGN
+======================================== */
+
+@media (max-width: 768px) {
+  .container-custom {
+    padding-inline: 1.25rem;
+  }
+
+  .section-padding {
+    padding-block: 3.5rem;
+  }
+}
+
 @media (max-width: 640px) {
   .container-custom {
     padding-inline: 1rem;
   }
+
+  .section-padding {
+    padding-block: 3rem;
+  }
 }
-body {
-  background: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-family: var(--font-inter), sans-serif;
+
+/* ========================================
+   REDUCED MOTION ACCESSIBILITY
+======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

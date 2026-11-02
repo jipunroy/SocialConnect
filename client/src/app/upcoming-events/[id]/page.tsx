@@ -1,4 +1,3 @@
-
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
@@ -53,9 +52,7 @@ function formatTime(date: string) {
   });
 }
 
-// ======================================
 // EVENT DETAILS CONTENT
-// ======================================
 
 function EventDetailsContent({
   eventId,
@@ -75,9 +72,7 @@ function EventDetailsContent({
   const [joined, setJoined] = useState(false);
   const [error, setError] = useState("");
 
-  // ======================================
   // FETCH EVENT DETAILS
-  // ======================================
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -119,9 +114,7 @@ function EventDetailsContent({
     }
   }, [eventId]);
 
-  // ======================================
   // CHECK JOINED STATUS
-  // ======================================
 
   useEffect(() => {
     const checkJoinedStatus = async () => {
@@ -148,8 +141,16 @@ function EventDetailsContent({
         const joinedEvents = result.events || [];
 
         const alreadyJoined = joinedEvents.some(
-          (item: { eventId?: string; _id?: string }) =>
-            String(item.eventId || item._id) === eventId
+          (item: {
+            eventId?: string;
+            _id?: string;
+            event?: { _id?: string };
+          }) =>
+            String(
+              item.eventId ||
+                item.event?._id ||
+                item._id
+            ) === eventId
         );
 
         setJoined(alreadyJoined);
@@ -163,9 +164,7 @@ function EventDetailsContent({
     }
   }, [session, sessionPending, eventId]);
 
-  // ======================================
   // JOIN EVENT
-  // ======================================
 
   const handleJoinEvent = async () => {
     if (!session?.user) {
@@ -224,13 +223,11 @@ function EventDetailsContent({
     }
   };
 
-  // ======================================
   // LOADING STATE
-  // ======================================
 
   if (loading || sessionPending) {
     return (
-      <div className="flex min-h-[70vh] items-center justify-center">
+      <div className="flex min-h-[70vh] items-center justify-center px-4">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-9 w-9 animate-spin text-primary" />
 
@@ -242,14 +239,11 @@ function EventDetailsContent({
     );
   }
 
-  // ======================================
   // ERROR STATE
-  // ======================================
 
   if (error || !event) {
     return (
       <div className="flex min-h-[70vh] flex-col items-center justify-center px-4 text-center">
-
         <div className="rounded-full bg-destructive/10 p-5 text-destructive">
           <CalendarDays className="h-10 w-10" />
         </div>
@@ -270,7 +264,6 @@ function EventDetailsContent({
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Events
         </Button>
-
       </div>
     );
   }
@@ -278,14 +271,12 @@ function EventDetailsContent({
   const eventHasPassed =
     new Date(event.eventDate).getTime() <= Date.now();
 
-  // ======================================
   // MAIN EVENT DETAILS UI
-  // ======================================
 
   return (
     <div className="min-h-screen bg-muted/20">
-
       {/* Back Navigation */}
+
       <div className="container mx-auto px-4 pt-8">
         <Link
           href="/upcoming-events"
@@ -297,19 +288,16 @@ function EventDetailsContent({
       </div>
 
       {/* Main Content */}
-      <section className="container mx-auto px-4 py-8">
 
+      <section className="container mx-auto px-4 py-8">
         <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_350px]">
 
-          {/* ======================================
-              LEFT: EVENT INFORMATION
-          ====================================== */}
+          {/* LEFT: EVENT INFORMATION */}
 
           <div className="min-w-0">
-
             {/* Event Image */}
-            <div className="relative overflow-hidden rounded-2xl bg-muted">
 
+            <div className="relative overflow-hidden rounded-2xl bg-muted">
               <img
                 src={event.thumbnail}
                 alt={event.title}
@@ -323,18 +311,16 @@ function EventDetailsContent({
               <span className="absolute left-5 top-5 rounded-full bg-background/90 px-4 py-2 text-sm font-semibold text-primary shadow backdrop-blur">
                 {event.eventType}
               </span>
-
             </div>
 
             {/* Event Title */}
-            <div className="mt-8">
 
+            <div className="mt-8">
               <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">
                 {event.title}
               </h1>
 
               <div className="mt-5 flex flex-wrap gap-x-6 gap-y-3 text-sm text-muted-foreground">
-
                 <div className="flex items-center gap-2">
                   <CalendarDays className="h-4 w-4 text-primary" />
                   {formatDate(event.eventDate)}
@@ -349,14 +335,12 @@ function EventDetailsContent({
                   <MapPin className="h-4 w-4 text-primary" />
                   {event.location}
                 </div>
-
               </div>
-
             </div>
 
             {/* Description */}
-            <div className="mt-10 rounded-2xl border bg-card p-6 sm:p-8">
 
+            <div className="mt-10 rounded-2xl border bg-card p-6 sm:p-8">
               <h2 className="text-xl font-bold">
                 About This Event
               </h2>
@@ -364,18 +348,16 @@ function EventDetailsContent({
               <p className="mt-4 whitespace-pre-line text-sm leading-8 text-muted-foreground sm:text-base">
                 {event.description}
               </p>
-
             </div>
 
             {/* Organizer */}
-            <div className="mt-6 rounded-2xl border bg-card p-6">
 
+            <div className="mt-6 rounded-2xl border bg-card p-6">
               <h2 className="text-lg font-bold">
                 Event Organizer
               </h2>
 
               <div className="mt-4 flex items-center gap-4">
-
                 <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
                   <UserRound className="h-6 w-6" />
                 </div>
@@ -389,24 +371,17 @@ function EventDetailsContent({
                     Event Creator
                   </p>
                 </div>
-
               </div>
-
             </div>
-
           </div>
 
-          {/* ======================================
-              RIGHT: JOIN EVENT SIDEBAR
-          ====================================== */}
+          {/* RIGHT: JOIN EVENT SIDEBAR */}
 
           <aside>
-
             <div className="sticky top-24 rounded-2xl border bg-card p-6 shadow-sm">
-
               {/* Sidebar Heading */}
-              <div className="flex items-center gap-3">
 
+              <div className="flex items-center gap-3">
                 <div className="rounded-xl bg-primary/10 p-3 text-primary">
                   <Users className="h-6 w-6" />
                 </div>
@@ -420,12 +395,11 @@ function EventDetailsContent({
                     Be part of the community
                   </p>
                 </div>
-
               </div>
 
               {/* Event Information */}
-              <div className="my-6 space-y-4 border-y py-5">
 
+              <div className="my-6 space-y-4 border-y py-5">
                 <div className="flex items-start gap-3">
                   <CalendarDays className="mt-0.5 h-5 w-5 text-primary" />
 
@@ -467,14 +441,12 @@ function EventDetailsContent({
                     </p>
                   </div>
                 </div>
-
               </div>
 
               {/* Join Button */}
+
               {joined ? (
-
                 <div className="rounded-xl bg-green-500/10 p-4 text-center">
-
                   <CheckCircle2 className="mx-auto h-7 w-7 text-green-600" />
 
                   <p className="mt-2 font-semibold text-green-700 dark:text-green-400">
@@ -485,16 +457,19 @@ function EventDetailsContent({
                     This event is now in your joined events.
                   </p>
 
+                  <Link
+                    href="/joined-events"
+                    className="mt-3 inline-block text-sm font-semibold text-primary hover:underline"
+                  >
+                    View Joined Events
+                  </Link>
                 </div>
-
               ) : (
-
                 <Button
                   className="h-12 w-full"
                   disabled={joining || eventHasPassed}
                   onClick={handleJoinEvent}
                 >
-
                   {joining ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -508,9 +483,7 @@ function EventDetailsContent({
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </>
                   )}
-
                 </Button>
-
               )}
 
               {!session?.user && !eventHasPassed && (
@@ -522,21 +495,15 @@ function EventDetailsContent({
               <p className="mt-5 text-center text-xs text-muted-foreground">
                 Connect with people and make a positive impact.
               </p>
-
             </div>
-
           </aside>
-
         </div>
-
       </section>
     </div>
   );
 }
 
-// ======================================
 // SUSPENSE FALLBACK
-// ======================================
 
 function EventDetailsLoading() {
   return (
@@ -552,18 +519,14 @@ function EventDetailsLoading() {
   );
 }
 
-// ======================================
 // PAGE COMPONENT
-// ======================================
 
 function EventDetailsPageContent() {
   const params = useParams<{ id: string }>();
 
   const eventId = params.id;
 
-  return (
-    <EventDetailsContent eventId={eventId} />
-  );
+  return <EventDetailsContent eventId={eventId} />;
 }
 
 export default function EventDetailsPage() {
