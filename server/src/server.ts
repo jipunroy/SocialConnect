@@ -1,5 +1,6 @@
 import dns from "node:dns";
 
+// MongoDB DNS configuration
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
 
 import "dotenv/config";
@@ -14,26 +15,49 @@ import {
 
 import { auth } from "./lib/auth.js";
 import { db } from "./lib/db.js";
+import { requireAuth } from "./middleware/require-auth.js";
 
 const app = express();
 
 const PORT = Number(process.env.PORT) || 5000;
 
-// CORS configuration
+// ======================================
+// CORS CONFIGURATION
+// ======================================
+
 app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:3000",
     credentials: true,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS",
+    ],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-// Better Auth handler must come before express.json()
+// ======================================
+// BETTER AUTH HANDLER
+// Must come before express.json()
+// ======================================
+
 app.all("/api/auth/*splat", toNodeHandler(auth));
+
+// ======================================
+// EXPRESS JSON MIDDLEWARE
+// ======================================
 
 app.use(express.json());
 
-// Health check + MongoDB connection test
+// ======================================
+// HEALTH CHECK + MONGODB CONNECTION
+// ======================================
+
 app.get("/api/health", async (_req, res) => {
   try {
     await db.command({ ping: 1 });
@@ -52,7 +76,10 @@ app.get("/api/health", async (_req, res) => {
   }
 });
 
-// Current logged-in user
+// ======================================
+// CURRENT LOGGED-IN USER
+// ======================================
+
 app.get("/api/me", async (req, res) => {
   try {
     const session = await auth.api.getSession({
@@ -80,7 +107,37 @@ app.get("/api/me", async (req, res) => {
   }
 });
 
-// Start server
+// ======================================
+// PROTECTED TEST ROUTE
+// ======================================
+
+app.get(
+  "/api/protected-test",
+  requireAuth,
+  (_req, res) => {
+    return res.status(200).json({
+      success: true,
+      message: "You are authenticated!",
+      user: res.locals.user,
+    });
+  }
+);
+
+// ======================================
+// ROOT ROUTE
+// ======================================
+
+app.get("/", (_req, res) => {
+  return res.status(200).json({
+    success: true,
+    message: "Welcome to SocialConnect API!",
+  });
+});
+
+// ======================================
+// START SERVER
+// ======================================
+
 app.listen(PORT, () => {
   console.log(
     `SocialConnect server running on http://localhost:${PORT}`

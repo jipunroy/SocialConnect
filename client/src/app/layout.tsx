@@ -5,7 +5,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { Navbar } from "@/components/shared/navbar";
+import { AuthNavbar } from "@/components/auth/auth-navbar";
 import Footer from "@/components/shared/footer";
 import { Toaster } from "sonner";
 
@@ -33,7 +33,7 @@ export default function RootLayout({
             id="top"
             className="flex min-h-screen flex-col"
           >
-            <Navbar />
+            <AuthNavbar />
 
             <main className="flex-1">
               {children}
