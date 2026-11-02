@@ -1,4 +1,3 @@
-
 import "dotenv/config";
 
 import { MongoClient } from "mongodb";
@@ -14,3 +13,35 @@ const mongoClient = new MongoClient(MONGODB_URI);
 export const db = mongoClient.db(
   process.env.MONGODB_DB_NAME || "socialconnect"
 );
+
+// ======================================
+// CREATE DATABASE INDEXES
+// ======================================
+
+export async function createDatabaseIndexes() {
+  await db.collection("events").createIndex({
+    creatorId: 1,
+  });
+
+  await db.collection("events").createIndex({
+    eventDate: 1,
+  });
+
+  await db.collection("eventJoins").createIndex(
+    {
+      eventId: 1,
+      userId: 1,
+    },
+    {
+      unique: true,
+    }
+  );
+
+  await db.collection("eventJoins").createIndex({
+    userId: 1,
+  });
+
+  console.log(
+    "MongoDB indexes created successfully!"
+  );
+}

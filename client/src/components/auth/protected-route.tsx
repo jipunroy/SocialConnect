@@ -1,9 +1,11 @@
+
 "use client";
 
 import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
 import { Loader2 } from "lucide-react";
+
+import { authClient } from "@/lib/auth-client";
 
 type ProtectedRouteProps = {
   children: ReactNode;
@@ -30,6 +32,7 @@ export function ProtectedRoute({
       <div className="flex min-h-[60vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
+
           <p className="text-sm text-muted-foreground">
             Checking your login...
           </p>
@@ -40,3 +43,4 @@ export function ProtectedRoute({
 
   return <>{children}</>;
 }
+  

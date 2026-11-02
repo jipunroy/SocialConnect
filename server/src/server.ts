@@ -14,8 +14,17 @@ import {
 } from "better-auth/node";
 
 import { auth } from "./lib/auth.js";
-import { db } from "./lib/db.js";
+import {
+  db,
+  createDatabaseIndexes,
+} from "./lib/db.js";
+
 import { requireAuth } from "./middleware/require-auth.js";
+import eventRoutes from "./routes/event.routes.js";
+
+// ======================================
+// EXPRESS APP
+// ======================================
 
 const app = express();
 
@@ -27,7 +36,8 @@ const PORT = Number(process.env.PORT) || 5000;
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin:
+      process.env.CLIENT_URL || "http://localhost:3000",
     credentials: true,
     methods: [
       "GET",
@@ -37,7 +47,10 @@ app.use(
       "DELETE",
       "OPTIONS",
     ],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+    ],
   })
 );
 
@@ -55,6 +68,12 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
 app.use(express.json());
 
 // ======================================
+// EVENT ROUTES
+// ======================================
+
+app.use("/api/events", eventRoutes);
+
+// ======================================
 // HEALTH CHECK + MONGODB CONNECTION
 // ======================================
 
@@ -64,7 +83,8 @@ app.get("/api/health", async (_req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: "SocialConnect server and MongoDB connected!",
+      message:
+        "SocialConnect server and MongoDB connected!",
     });
   } catch (error) {
     console.error("MongoDB connection error:", error);
@@ -135,11 +155,20 @@ app.get("/", (_req, res) => {
 });
 
 // ======================================
-// START SERVER
+// START SERVER + CREATE DATABASE INDEXES
 // ======================================
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
   console.log(
     `SocialConnect server running on http://localhost:${PORT}`
   );
+
+  try {
+    await createDatabaseIndexes();
+  } catch (error) {
+    console.error(
+      "Database index creation failed:",
+      error
+    );
+  }
 });
