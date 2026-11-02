@@ -18,8 +18,18 @@ const eventTypes = [
   "Other",
 ];
 
-// CREATE EVENT
+// Validate Event ID
+function getEventId(
+  id: string | string[] | undefined
+): string | null {
+  if (typeof id !== "string") {
+    return null;
+  }
 
+  return ObjectId.isValid(id) ? id : null;
+}
+
+// CREATE EVENT
 router.post("/", requireAuth, async (req, res) => {
   try {
     const user = res.locals.user;
@@ -207,9 +217,9 @@ router.get("/joined", requireAuth, async (_req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const { id } = req.params;
+    const id = getEventId(req.params.id);
 
-    if (!ObjectId.isValid(id)) {
+    if (!id) {
       return res.status(400).json({
         success: false,
         message: "Invalid event ID.",
@@ -246,9 +256,9 @@ router.get("/:id", async (req, res) => {
 router.post("/:id/join", requireAuth, async (req, res) => {
   try {
     const user = res.locals.user;
-    const { id } = req.params;
+    const id = getEventId(req.params.id);
 
-    if (!ObjectId.isValid(id)) {
+    if (!id) {
       return res.status(400).json({
         success: false,
         message: "Invalid event ID.",
@@ -306,9 +316,9 @@ router.post("/:id/join", requireAuth, async (req, res) => {
 router.patch("/:id", requireAuth, async (req, res) => {
   try {
     const user = res.locals.user;
-    const { id } = req.params;
+    const id = getEventId(req.params.id);
 
-    if (!ObjectId.isValid(id)) {
+    if (!id) {
       return res.status(400).json({
         success: false,
         message: "Invalid event ID.",
@@ -423,9 +433,9 @@ router.patch("/:id", requireAuth, async (req, res) => {
 router.delete("/:id", requireAuth, async (req, res) => {
   try {
     const user = res.locals.user;
-    const { id } = req.params;
+    const id = getEventId(req.params.id);
 
-    if (!ObjectId.isValid(id)) {
+    if (!id) {
       return res.status(400).json({
         success: false,
         message: "Invalid event ID.",
