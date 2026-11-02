@@ -13,9 +13,8 @@ import {
   Menu,
   PlusCircle,
   Settings,
-  User,
   Users,
-  X,
+  User,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -82,19 +81,17 @@ export function Navbar({
   const [mobileOpen, setMobileOpen] = useState(false);
   const router = useRouter();
 
-  const initials = user?.name
-    ?.split(" ")
-    .map((part) => part[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
+  const initials =
+    user?.name
+      ?.split(" ")
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() || "U";
 
   const handleLogout = () => {
     setMobileOpen(false);
-
-    if (onLogout) {
-      onLogout();
-    }
+    onLogout?.();
   };
 
   const handleNavigation = (href: string) => {
@@ -155,11 +152,9 @@ export function Navbar({
           <ThemeToggle />
 
           {!user ? (
-            <Button asChild={false} onClick={() => router.push("/login")}>
-              <span className="flex items-center gap-2">
-                <LogIn className="h-4 w-4" />
-                Login
-              </span>
+            <Button onClick={() => router.push("/login")}>
+              <LogIn className="mr-2 h-4 w-4" />
+              Login
             </Button>
           ) : (
             <DropdownMenu>
@@ -169,8 +164,9 @@ export function Navbar({
                     src={user.image || undefined}
                     alt={user.name}
                   />
+
                   <AvatarFallback className="bg-primary/10 text-sm font-semibold text-primary">
-                    {initials || "U"}
+                    {initials}
                   </AvatarFallback>
                 </Avatar>
 
@@ -236,12 +232,7 @@ export function Navbar({
             onOpenChange={setMobileOpen}
           >
             <SheetTrigger className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-input bg-background hover:bg-accent">
-              {mobileOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
-
+              <Menu className="h-5 w-5" />
               <span className="sr-only">
                 Toggle navigation menu
               </span>
@@ -311,8 +302,9 @@ export function Navbar({
                           src={user.image || undefined}
                           alt={user.name}
                         />
+
                         <AvatarFallback className="bg-primary/10 text-primary">
-                          {initials || "U"}
+                          {initials}
                         </AvatarFallback>
                       </Avatar>
 
