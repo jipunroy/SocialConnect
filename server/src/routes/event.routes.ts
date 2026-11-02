@@ -190,41 +190,41 @@ router.get("/joined", requireAuth, async (_req, res) => {
 });
 
 // Get Single Event
-router.get("/:id", async (req, res) => {
+
+router.get("/", async (req, res) => {
   try {
-    const { id } = req.params;
+    const requestedLimit = Number(req.query.limit);
 
-    if (!ObjectId.isValid(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid event ID.",
-      });
+    const eventsCollection = db.collection("events");
+
+    const cursor = eventsCollection
+      .find({
+        eventDate: { $gt: new Date() },
+      })
+      .sort({ eventDate: 1 });
+
+    // Home page চাইলে limit=6 পাঠাবে।
+    if (Number.isInteger(requestedLimit) && requestedLimit > 0) {
+      cursor.limit(Math.min(requestedLimit, 100));
     }
 
-    const event = await eventsCollection.findOne({
-      _id: new ObjectId(id),
-    });
+    const events = await cursor.toArray();
 
-    if (!event) {
-      return res.status(404).json({
-        success: false,
-        message: "Event not found.",
-      });
-    }
-
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
-      event,
+      total: events.length,
+      events,
     });
   } catch (error) {
-    console.error("Get event error:", error);
+    console.error("Fetch events error:", error);
 
-    return res.status(500).json({
+    res.status(500).json({
       success: false,
-      message: "Unable to fetch event.",
+      message: "Failed to fetch events.",
     });
   }
 });
+
 
 // Join Event
 router.post("/:id/join", requireAuth, async (req, res) => {
