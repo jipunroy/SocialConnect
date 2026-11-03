@@ -10,6 +10,7 @@ import {
 
 import { db } from "./db.js";
 
+// Allowed frontend origins
 const trustedOrigins = [
   process.env.CLIENT_URL,
   "http://localhost:3000",
@@ -18,19 +19,25 @@ const trustedOrigins = [
 export const auth = betterAuth({
   appName: "SocialConnect",
 
+  // Backend URL
   baseURL: process.env.BETTER_AUTH_URL!,
 
+  // Authentication secret
   secret: process.env.BETTER_AUTH_SECRET!,
 
+  // Allowed frontend URLs
   trustedOrigins,
 
+  // MongoDB database
   database: mongodbAdapter(db),
 
+  // Email and password authentication
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 6,
   },
 
+  // Google OAuth
   socialProviders: {
     ...(process.env.GOOGLE_CLIENT_ID &&
     process.env.GOOGLE_CLIENT_SECRET
@@ -43,6 +50,7 @@ export const auth = betterAuth({
       : {}),
   },
 
+  // Password validation
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
       if (ctx.path !== "/sign-up/email") {
@@ -65,5 +73,6 @@ export const auth = betterAuth({
     }),
   },
 
+  // JWT plugin
   plugins: [jwt()],
 });
