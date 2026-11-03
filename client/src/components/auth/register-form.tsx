@@ -35,6 +35,7 @@ export function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
+  // Form validation
   const validateForm = () => {
     if (!name.trim()) {
       toast.error("Please enter your full name.");
@@ -99,6 +100,7 @@ export function RegisterForm() {
     return true;
   };
 
+  // Email registration
   const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -112,7 +114,7 @@ export function RegisterForm() {
         email: email.trim(),
         password,
         image: photoURL.trim() || undefined,
-        callbackURL: `${window.location.origin}/`,
+        callbackURL: `${window.location.origin}/login`,
       });
 
       if (error) {
@@ -122,9 +124,11 @@ export function RegisterForm() {
         return;
       }
 
-      toast.success("Account created successfully!");
+      toast.success(
+        "Account created successfully! Please login."
+      );
 
-      router.replace("/");
+      router.replace("/login");
       router.refresh();
     } catch (error) {
       console.error("Registration error:", error);
@@ -134,6 +138,7 @@ export function RegisterForm() {
     }
   };
 
+  // Google registration
   const handleGoogleRegister = async () => {
     setGoogleLoading(true);
 
@@ -161,6 +166,7 @@ export function RegisterForm() {
   return (
     <div className="w-full space-y-6">
       <form onSubmit={handleRegister} className="space-y-4">
+        {/* Full Name */}
         <div className="space-y-2">
           <Label htmlFor="name">Full Name</Label>
 
@@ -180,6 +186,7 @@ export function RegisterForm() {
           </div>
         </div>
 
+        {/* Email */}
         <div className="space-y-2">
           <Label htmlFor="email">Email Address</Label>
 
@@ -199,6 +206,7 @@ export function RegisterForm() {
           </div>
         </div>
 
+        {/* Profile Photo URL */}
         <div className="space-y-2">
           <Label htmlFor="photoURL">
             Profile Photo URL
@@ -221,6 +229,7 @@ export function RegisterForm() {
           </div>
         </div>
 
+        {/* Password */}
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
 
@@ -257,8 +266,11 @@ export function RegisterForm() {
           </p>
         </div>
 
+        {/* Confirm Password */}
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <Label htmlFor="confirmPassword">
+            Confirm Password
+          </Label>
 
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -293,6 +305,7 @@ export function RegisterForm() {
           </div>
         </div>
 
+        {/* Terms */}
         <div className="flex items-start gap-2">
           <input
             id="terms"
@@ -324,6 +337,7 @@ export function RegisterForm() {
           </Label>
         </div>
 
+        {/* Register Button */}
         <Button
           type="submit"
           className="h-11 w-full gradient-bg font-semibold text-white hover:opacity-90"
@@ -340,6 +354,7 @@ export function RegisterForm() {
         </Button>
       </form>
 
+      {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />
@@ -352,6 +367,7 @@ export function RegisterForm() {
         </div>
       </div>
 
+      {/* Google Registration */}
       <Button
         type="button"
         variant="outline"
@@ -370,6 +386,7 @@ export function RegisterForm() {
         Continue with Google
       </Button>
 
+      {/* Login Link */}
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link
