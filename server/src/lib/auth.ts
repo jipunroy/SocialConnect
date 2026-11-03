@@ -1,3 +1,4 @@
+
 import "dotenv/config";
 
 import { betterAuth } from "better-auth";
@@ -27,6 +28,15 @@ export const auth = betterAuth({
 
   // Allowed frontend URLs
   trustedOrigins,
+
+  // Production cookie configuration
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+      httpOnly: true,
+    },
+  },
 
   // MongoDB database
   database: mongodbAdapter(db),

@@ -1,10 +1,10 @@
-import impactRoutes from "./routes/impact.routes.js";
+
+import "dotenv/config";
+
 import dns from "node:dns";
 
 // MongoDB DNS configuration
 dns.setServers(["8.8.8.8", "8.8.4.4"]);
-
-import "dotenv/config";
 
 import express from "express";
 import cors from "cors";
@@ -25,6 +25,7 @@ import { requireAuth } from "./middleware/require-auth.js";
 
 import eventRoutes from "./routes/event.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
+import impactRoutes from "./routes/impact.routes.js";
 
 // ======================================
 // EXPRESS APP
@@ -38,10 +39,14 @@ const PORT = Number(process.env.PORT) || 5000;
 // CORS CONFIGURATION
 // ======================================
 
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:3000",
+].filter((origin): origin is string => Boolean(origin));
+
 app.use(
   cors({
-    origin:
-      process.env.CLIENT_URL || "http://localhost:3000",
+    origin: allowedOrigins,
     credentials: true,
     methods: [
       "GET",
@@ -70,6 +75,12 @@ app.all("/api/auth/*splat", toNodeHandler(auth));
 // ======================================
 
 app.use(express.json());
+
+// ======================================
+// UPLOAD ROUTES
+// ======================================
+
+app.use("/api/upload", uploadRoutes);
 
 // ======================================
 // EVENT ROUTES
@@ -170,7 +181,7 @@ app.get("/", (_req, res) => {
 
 app.listen(PORT, async () => {
   console.log(
-    `SocialConnect server running on http://localhost:${PORT}`
+    `SocialConnect server running on port ${PORT}`
   );
 
   try {
