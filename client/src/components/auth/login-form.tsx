@@ -52,7 +52,6 @@ export function LoginForm() {
       const { error } = await authClient.signIn.email({
         email,
         password,
-        callbackURL: "/",
       });
 
       if (error) {
@@ -60,9 +59,18 @@ export function LoginForm() {
         return;
       }
 
+      // Confirm that the session is available
+      const sessionResult = await authClient.getSession();
+
+      if (!sessionResult.data?.session) {
+        toast.error("Login succeeded, but session could not be verified. Please try again.");
+        return;
+      }
+
       toast.success("Login successful!");
-      router.replace("/");
-      router.refresh();
+
+      // Navigate after session confirmation
+      window.location.replace("/");
     } catch (error) {
       console.error("Login error:", error);
       toast.error("Unable to login. Please try again.");
@@ -79,7 +87,7 @@ export function LoginForm() {
 
       const { error } = await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: `${window.location.origin}/`,
       });
 
       if (error) {
