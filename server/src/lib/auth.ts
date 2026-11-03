@@ -1,4 +1,3 @@
-
 import "dotenv/config";
 
 import { betterAuth } from "better-auth";
@@ -11,6 +10,11 @@ import {
 
 import { db } from "./db.js";
 
+const trustedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:3000",
+].filter((origin): origin is string => Boolean(origin));
+
 export const auth = betterAuth({
   appName: "SocialConnect",
 
@@ -18,9 +22,7 @@ export const auth = betterAuth({
 
   secret: process.env.BETTER_AUTH_SECRET!,
 
-  trustedOrigins: [
-    process.env.CLIENT_URL || "http://localhost:3000",
-  ],
+  trustedOrigins,
 
   database: mongodbAdapter(db),
 
@@ -63,7 +65,5 @@ export const auth = betterAuth({
     }),
   },
 
-  plugins: [
-    jwt(),
-  ],
+  plugins: [jwt()],
 });

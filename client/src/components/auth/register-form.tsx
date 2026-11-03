@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, type FormEvent } from "react";
@@ -31,8 +30,7 @@ export function RegisterForm() {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -114,7 +112,7 @@ export function RegisterForm() {
         email: email.trim(),
         password,
         image: photoURL.trim() || undefined,
-        callbackURL: "/",
+        callbackURL: `${window.location.origin}/`,
       });
 
       if (error) {
@@ -142,7 +140,9 @@ export function RegisterForm() {
     try {
       const { error } = await authClient.signIn.social({
         provider: "google",
-        callbackURL: "/",
+        callbackURL: `${window.location.origin}/`,
+        errorCallbackURL: `${window.location.origin}/register`,
+        newUserCallbackURL: `${window.location.origin}/`,
       });
 
       if (error) {
@@ -161,8 +161,6 @@ export function RegisterForm() {
   return (
     <div className="w-full space-y-6">
       <form onSubmit={handleRegister} className="space-y-4">
-
-        {/* Full Name */}
         <div className="space-y-2">
           <Label htmlFor="name">Full Name</Label>
 
@@ -182,7 +180,6 @@ export function RegisterForm() {
           </div>
         </div>
 
-        {/* Email */}
         <div className="space-y-2">
           <Label htmlFor="email">Email Address</Label>
 
@@ -202,7 +199,6 @@ export function RegisterForm() {
           </div>
         </div>
 
-        {/* Profile Photo URL */}
         <div className="space-y-2">
           <Label htmlFor="photoURL">
             Profile Photo URL
@@ -225,7 +221,6 @@ export function RegisterForm() {
           </div>
         </div>
 
-        {/* Password */}
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
 
@@ -247,9 +242,7 @@ export function RegisterForm() {
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label={
-                showPassword ? "Hide password" : "Show password"
-              }
+              aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? (
                 <EyeOff size={18} />
@@ -264,11 +257,8 @@ export function RegisterForm() {
           </p>
         </div>
 
-        {/* Confirm Password */}
         <div className="space-y-2">
-          <Label htmlFor="confirmPassword">
-            Confirm Password
-          </Label>
+          <Label htmlFor="confirmPassword">Confirm Password</Label>
 
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -291,9 +281,7 @@ export function RegisterForm() {
               }
               className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
               aria-label={
-                showConfirmPassword
-                  ? "Hide password"
-                  : "Show password"
+                showConfirmPassword ? "Hide password" : "Show password"
               }
             >
               {showConfirmPassword ? (
@@ -305,7 +293,6 @@ export function RegisterForm() {
           </div>
         </div>
 
-        {/* Terms */}
         <div className="flex items-start gap-2">
           <input
             id="terms"
@@ -337,7 +324,6 @@ export function RegisterForm() {
           </Label>
         </div>
 
-        {/* Register Button */}
         <Button
           type="submit"
           className="h-11 w-full gradient-bg font-semibold text-white hover:opacity-90"
@@ -354,7 +340,6 @@ export function RegisterForm() {
         </Button>
       </form>
 
-      {/* Divider */}
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t" />
@@ -367,7 +352,6 @@ export function RegisterForm() {
         </div>
       </div>
 
-      {/* Google Registration */}
       <Button
         type="button"
         variant="outline"
@@ -386,7 +370,6 @@ export function RegisterForm() {
         Continue with Google
       </Button>
 
-      {/* Login Link */}
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{" "}
         <Link
